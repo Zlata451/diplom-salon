@@ -26,5 +26,8 @@ RUN composer install --no-dev --optimize-autoloader
 # Генерируем ключ приложения
 RUN php artisan key:generate
 
+# Настраиваем права
+RUN chmod -R 775 storage bootstrap/cache
+
 # Запуск Laravel
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
