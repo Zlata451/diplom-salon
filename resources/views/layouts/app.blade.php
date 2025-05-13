@@ -12,10 +12,10 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Styles -->
-        <link rel="stylesheet" href="{{ asset('build/assets/app-DXnCgaXg.css') }}">
+        <link rel="stylesheet" href="{{ secure_asset('build/assets/app-DXnCgaXg.css') }}">
 
         <!-- Scripts -->
-        <script src="{{ asset('build/assets/app-Bo-u61x1.js') }}" defer></script>
+        <script src="{{ secure_asset('build/assets/app-Bo-u61x1.js') }}" defer></script>
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">
