@@ -24,7 +24,7 @@
                     <div class="bg-white p-6 rounded-lg shadow text-center">
                         {{-- Фото майстра --}}
                         @if ($master->photo)
-                            <img src="{{ asset('storage/' . $master->photo) }}"
+                            <img src="{{ asset('storage/masters/' . basename($master->photo)) }}"
                                  alt="{{ $master->name }}"
                                  class="w-full h-60 object-cover rounded mb-4">
                         @else
