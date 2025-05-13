@@ -13,6 +13,8 @@
 
         <!-- Styles -->
         <link rel="stylesheet" href="{{ asset('build/assets/app-DXnCgaXg.css') }}">
+
+        <!-- Scripts -->
         <script src="{{ asset('build/assets/app-Bo-u61x1.js') }}" defer></script>
     </head>
     <body class="font-sans antialiased">
