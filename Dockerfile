@@ -23,11 +23,14 @@ WORKDIR /var/www/html
 # Устанавливаем зависимости Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# Генерируем ключ приложения
+# 📄 Копируем .env
+RUN cp .env.example .env
+
+# 🔑 Генерируем APP_KEY
 RUN php artisan key:generate
 
-# Настраиваем права
+# 🛠️ Настраиваем права
 RUN chmod -R 775 storage bootstrap/cache
 
-# Запуск Laravel
+# 🚀 Запуск Laravel-сервера
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
