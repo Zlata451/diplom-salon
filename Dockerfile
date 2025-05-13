@@ -30,7 +30,7 @@ RUN cp .env.example .env
 RUN php artisan key:generate
 
 # 🛠️ Настраиваем права
-RUN chmod -R 775 storage bootstrap/cache
+RUN chmod -R 775 storage bootstrap/cache public
 
 # 🚀 Запуск Laravel-сервера
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
