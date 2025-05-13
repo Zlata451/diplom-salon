@@ -11,7 +11,7 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-        <!-- Styles (заменили @vite на прямую ссылку на собранные ассеты) -->
+        <!-- Styles -->
         <link rel="stylesheet" href="{{ asset('build/assets/app-DXnCgaXg.css') }}">
         <script src="{{ asset('build/assets/app-Bo-u61x1.js') }}" defer></script>
     </head>
