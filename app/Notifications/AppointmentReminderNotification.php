@@ -25,9 +25,13 @@ class AppointmentReminderNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
+        $greetingName = method_exists($notifiable, 'getAttribute') && $notifiable->getAttribute('name')
+            ? $notifiable->name
+            : 'клієнте';
+
         return (new MailMessage)
             ->subject('Нагадування про запис')
-            ->greeting("Привіт, {$notifiable->name}!")
+            ->greeting("Привіт, {$greetingName}!")
             ->line("Нагадуємо, що ви маєте запис на послугу \"{$this->appointment->service->name}\".")
             ->line("Дата: {$this->appointment->date}")
             ->line("Час: {$this->appointment->time}")

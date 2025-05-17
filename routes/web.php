@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\MasterController;
 use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\Admin\WorkingHourController;
+use App\Http\Controllers\Admin\AppointmentToolsController;
 use App\Http\Controllers\ServicePublicController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\PublicMasterController;
@@ -42,26 +43,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments.index');
     Route::get('/appointments/create', [AppointmentController::class, 'create'])->name('appointments.create');
     Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
-
-    // 🔄 Окреме оновлення тільки статусу
     Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.updateStatus');
     Route::patch('/appointments/{appointment}/cancel', [AppointmentController::class, 'cancel'])->name('appointments.cancel');
-
-    // ✏️ Редагування запису
     Route::get('/appointments/{appointment}/edit', [AppointmentController::class, 'edit'])->name('appointments.edit');
     Route::put('/appointments/{appointment}', [AppointmentController::class, 'update'])->name('appointments.update');
     Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy'])->name('appointments.destroy');
-
-    // 🔥 Запис на конкретну послугу
     Route::get('/services/{service}/book', [AppointmentController::class, 'book'])->name('appointments.book');
-
-    // 🔥 Запис до обраного майстра
     Route::get('/masters/{master}/book', [AppointmentController::class, 'bookWithMaster'])->name('appointments.bookWithMaster');
-
-    // 🔁 Повторити запис
     Route::get('/appointments/{appointment}/repeat', [AppointmentController::class, 'repeat'])->name('appointments.repeat');
-
-    // 🧾 Мої записи
     Route::get('/my-appointments', [AppointmentController::class, 'my'])->name('appointments.my');
 });
 
@@ -71,28 +60,32 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('masters', MasterController::class);
     Route::resource('news', NewsController::class);
 
-    // ✏️ Редагування графіку роботи
+    // ✏️ Графік роботи
     Route::get('masters/{master}/working-hours', [WorkingHourController::class, 'edit'])->name('working-hours.edit');
     Route::post('masters/{master}/working-hours', [WorkingHourController::class, 'update'])->name('working-hours.update');
 
-    // ✏️ Редагування секцій "Про нас"
+    // ✏️ Розділ "Про нас"
     Route::get('/about/{section}/edit', [AboutController::class, 'edit'])->name('about.edit');
     Route::patch('/about/{about}', [AboutController::class, 'update'])->name('about.update');
 
-    // ✏️ Редагування "Контактів"
+    // ✏️ Контакти
     Route::get('/contact/edit', [ContactController::class, 'edit'])->name('contact.edit');
     Route::patch('/contact/{contact}', [ContactController::class, 'update'])->name('contact.update');
+
+    // 🛎️ Ручні дії для записів
+    Route::post('/appointments/send-reminders', [AppointmentToolsController::class, 'sendReminders'])->name('appointments.sendReminders');
+    Route::post('/appointments/update-statuses', [AppointmentToolsController::class, 'updateStatuses'])->name('appointments.updateStatuses');
 });
 
 // 🌐 Публічні сторінки
 Route::get('/services', [ServicePublicController::class, 'index'])->name('services.index');
 Route::get('/masters', [PublicMasterController::class, 'index'])->name('masters.index');
 
-// 📰 Публічні новини
+// 📰 Новини
 Route::get('/news', [PublicNewsController::class, 'index'])->name('news.index');
 Route::get('/news/{news}', [PublicNewsController::class, 'show'])->name('news.show');
 
-// 📡 API: Отримання майстрів по послузі (для JavaScript)
+// 📡 API
 Route::get('/api/services/{service}/masters', [MasterApiController::class, 'getByService']);
 
 require __DIR__.'/auth.php';
