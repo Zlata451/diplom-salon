@@ -33,4 +33,12 @@ class Master extends Model
     {
         return $this->hasMany(WorkingHour::class);
     }
+
+    /**
+     * 💬 Відгуки (поліморфний зв'язок)
+     */
+    public function reviews()
+    {
+        return $this->morphMany(Review::class, 'reviewable');
+    }
 }

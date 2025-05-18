@@ -21,4 +21,10 @@ class Service extends Model
     {
         return $this->belongsToMany(Master::class);
     }
+
+    // 💬 Відгуки (поліморфний зв'язок)
+    public function reviews()
+    {
+        return $this->morphMany(Review::class, 'reviewable');
+    }
 }

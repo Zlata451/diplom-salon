@@ -18,6 +18,15 @@
                         'saturday' => 'Субота',
                         'sunday' => 'Неділя',
                     ];
+
+                    function pluralUkr($count) {
+                        $mod10 = $count % 10;
+                        $mod100 = $count % 100;
+
+                        if ($mod10 == 1 && $mod100 != 11) return 'відгук';
+                        if ($mod10 >= 2 && $mod10 <= 4 && ($mod100 < 10 || $mod100 >= 20)) return 'відгуки';
+                        return 'відгуків';
+                    }
                 @endphp
 
                 @forelse ($masters as $master)
@@ -45,6 +54,20 @@
                             <p class="text-sm text-gray-500">✉️ {{ $master->email }}</p>
                         @endif
 
+                        {{-- ⭐ Рейтинг --}}
+                        @php
+                            $reviewCount = $master->reviews->count();
+                            $averageRating = $reviewCount > 0
+                                ? round($master->reviews->avg('rating'), 1)
+                                : null;
+                        @endphp
+
+                        @if ($reviewCount > 0)
+                            <p class="text-yellow-500 text-sm mt-2">
+                                ⭐ {{ $averageRating }} / 5 ({{ $reviewCount }} {{ pluralUkr($reviewCount) }})
+                            </p>
+                        @endif
+
                         {{-- Графік роботи --}}
                         @if ($master->workingHours->count())
                             <div class="mt-4 text-sm text-left">
@@ -63,11 +86,18 @@
                             <p class="mt-4 text-sm text-gray-400">Графік роботи не вказано</p>
                         @endif
 
-                        {{-- Кнопка запису --}}
-                        <a href="{{ route('appointments.bookWithMaster', ['master' => $master->id]) }}"
-                           class="mt-4 inline-block bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded">
-                            📝 Записатися
-                        </a>
+                        {{-- Кнопки --}}
+                        <div class="mt-4 flex justify-center gap-3">
+                            <a href="{{ route('appointments.bookWithMaster', ['master' => $master->id]) }}"
+                               class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded">
+                                📝 Записатися
+                            </a>
+
+                            <a href="{{ route('masters.show', $master->id) }}"
+                               class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded border border-gray-300">
+                                ℹ️ Детальніше →
+                            </a>
+                        </div>
                     </div>
                 @empty
                     <p class="text-gray-500 col-span-full text-center">Наразі майстрів немає 🥲</p>

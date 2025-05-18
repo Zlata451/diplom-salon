@@ -9,7 +9,17 @@ class ServicePublicController extends Controller
 {
     public function index()
     {
-        $services = Service::all();
+        // ⬇️ Завантажуємо також відгуки для кожної послуги
+        $services = Service::with('reviews.user')->get();
+
         return view('services.index', compact('services'));
+    }
+
+    public function show(Service $service)
+    {
+        // ⬇️ Завантаження відгуків з користувачами
+        $service->load('reviews.user');
+
+        return view('services.show', compact('service'));
     }
 }
