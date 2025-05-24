@@ -52,4 +52,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Review::class);
     }
+
+    /**
+     * 📅 Записи користувача
+     */
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
 }

@@ -40,8 +40,6 @@ class MasterController extends Controller
 
         if ($request->hasFile('photo')) {
             $validated['photo'] = $request->file('photo')->store('masters', 'public');
-
-
         }
 
         $master = Master::create($validated);
@@ -147,5 +145,31 @@ class MasterController extends Controller
         $master->delete();
 
         return redirect()->route('admin.masters.index')->with('success', 'Майстра видалено успішно!');
+    }
+
+    /**
+     * 📅 API: Графік роботи майстра (українською)
+     */
+    public function schedule(Master $master)
+    {
+        $uaDays = [
+            'monday'    => 'Понеділок',
+            'tuesday'   => 'Вівторок',
+            'wednesday' => 'Середа',
+            'thursday'  => 'Четвер',
+            'friday'    => 'Пʼятниця',
+            'saturday'  => 'Субота',
+            'sunday'    => 'Неділя',
+        ];
+
+        $schedule = $master->workingHours->map(function ($hour) use ($uaDays) {
+            return [
+                'day' => $uaDays[$hour->day_of_week] ?? ucfirst($hour->day_of_week),
+                'from' => substr($hour->start_time, 0, 5),
+                'to' => substr($hour->end_time, 0, 5),
+            ];
+        });
+
+        return response()->json($schedule);
     }
 }

@@ -18,21 +18,41 @@
                     </div>
                 @endif
 
+                @if (session('error'))
+                    <div class="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
                 <form method="POST" action="{{ route('appointments.store') }}">
                     @csrf
 
-                    {{-- Послуга --}}
+                    @if (auth()->user()->role === 'admin')
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700">Клієнт</label>
+                            <select name="user_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                                <option value="">Оберіть клієнта</option>
+                                @foreach ($users as $user)
+                                    <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
+                                        {{ $user->name }} ({{ $user->email }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700">Послуга</label>
                         <select name="service_id" id="service_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
                             <option value="">Оберіть послугу</option>
                             @foreach ($services as $service)
-                                <option value="{{ $service->id }}">{{ $service->name }} ({{ $service->price }} грн)</option>
+                                <option value="{{ $service->id }}" {{ old('service_id') == $service->id ? 'selected' : '' }}>
+                                    {{ $service->name }} ({{ $service->price }} грн)
+                                </option>
                             @endforeach
                         </select>
                     </div>
 
-                    {{-- Майстер --}}
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700">Майстер</label>
                         <select name="master_id" id="master_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
@@ -40,16 +60,26 @@
                         </select>
                     </div>
 
-                    {{-- Дата --}}
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Дата</label>
-                        <input type="date" name="date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                    {{-- Графік роботи --}}
+                    <div id="schedule-box" class="mb-4 hidden border rounded p-3 bg-gray-50 text-sm text-gray-700">
+                        <strong>Графік роботи майстра:</strong>
+                        <ul id="schedule-list" class="list-disc list-inside mt-1"></ul>
                     </div>
 
-                    {{-- Час --}}
+                    {{-- Зайняті години --}}
+                    <div id="booked-times-box" class="mb-4 hidden border rounded p-3 bg-red-50 text-sm text-red-700">
+                        <strong>Зайняті години:</strong>
+                        <div id="booked-times-list" class="mt-1"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Дата</label>
+                        <input type="date" name="date" id="date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" value="{{ old('date') }}" required>
+                    </div>
+
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700">Час</label>
-                        <input type="time" name="time" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                        <input type="time" name="time" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" value="{{ old('time') }}" required>
                     </div>
 
                     <x-primary-button>
@@ -65,6 +95,11 @@
     <script>
         const serviceSelect = document.getElementById('service_id');
         const masterSelect = document.getElementById('master_id');
+        const scheduleBox = document.getElementById('schedule-box');
+        const scheduleList = document.getElementById('schedule-list');
+        const dateInput = document.getElementById('date');
+        const bookedBox = document.getElementById('booked-times-box');
+        const bookedList = document.getElementById('booked-times-list');
 
         serviceSelect.addEventListener('change', async () => {
             const serviceId = serviceSelect.value;
@@ -79,11 +114,6 @@
                 const response = await axios.get(`/api/services/${serviceId}/masters`);
                 const masters = response.data;
 
-                if (masters.length === 0) {
-                    masterSelect.innerHTML = '<option value="">Немає майстрів для цієї послуги</option>';
-                    return;
-                }
-
                 masterSelect.innerHTML = '<option value="">Оберіть майстра</option>';
                 masters.forEach(master => {
                     const option = document.createElement('option');
@@ -91,11 +121,61 @@
                     option.textContent = `${master.name} (${master.specialty})`;
                     masterSelect.appendChild(option);
                 });
-
             } catch (error) {
-                console.error('Помилка при завантаженні майстрів:', error);
                 masterSelect.innerHTML = '<option value="">Помилка при завантаженні</option>';
             }
         });
+
+        masterSelect.addEventListener('change', () => {
+            loadSchedule();
+            loadBookedTimes();
+        });
+
+        dateInput.addEventListener('change', loadBookedTimes);
+
+        async function loadSchedule() {
+            const masterId = masterSelect.value;
+            if (!masterId) return;
+
+            try {
+                const res = await axios.get(`/api/masters/${masterId}/schedule`);
+                scheduleList.innerHTML = '';
+                res.data.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = `${item.day}: ${item.from} – ${item.to}`;
+                    scheduleList.appendChild(li);
+                });
+                scheduleBox.classList.remove('hidden');
+            } catch {
+                scheduleBox.classList.add('hidden');
+                scheduleList.innerHTML = '';
+            }
+        }
+
+        async function loadBookedTimes() {
+            const masterId = masterSelect.value;
+            const date = dateInput.value;
+            if (!masterId || !date) {
+                bookedBox.classList.add('hidden');
+                bookedList.innerHTML = '';
+                return;
+            }
+
+            try {
+                const res = await axios.get(`/api/masters/${masterId}/booked-times`, { params: { date } });
+
+                if (res.data.length === 0) {
+                    bookedBox.classList.add('hidden');
+                    bookedList.innerHTML = '';
+                    return;
+                }
+
+                bookedList.innerHTML = res.data.map(t => `• ${t}`).join('<br>');
+                bookedBox.classList.remove('hidden');
+            } catch {
+                bookedBox.classList.add('hidden');
+                bookedList.innerHTML = '';
+            }
+        }
     </script>
 </x-app-layout>

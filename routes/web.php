@@ -77,7 +77,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('/appointments/send-reminders', [AppointmentToolsController::class, 'sendReminders'])->name('appointments.sendReminders');
     Route::post('/appointments/update-statuses', [AppointmentToolsController::class, 'updateStatuses'])->name('appointments.updateStatuses');
 
-    // 🗑️ Видалення відгуків (admin.reviews.destroy)
     Route::delete('/reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
 });
 
@@ -94,5 +93,7 @@ Route::get('/news/{news}', [PublicNewsController::class, 'show'])->name('news.sh
 
 // 📡 API
 Route::get('/api/services/{service}/masters', [MasterApiController::class, 'getByService']);
+Route::get('/api/masters/{master}/schedule', [MasterController::class, 'schedule']);
+Route::get('/api/masters/{master}/booked-times', [AppointmentController::class, 'bookedTimes']); // ✅ Виправлено
 
 require __DIR__.'/auth.php';

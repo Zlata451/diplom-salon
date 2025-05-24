@@ -20,14 +20,14 @@
             @csrf
             @method('PUT')
 
-            {{-- Послуга (тільки для перегляду) --}}
+            {{-- Послуга --}}
             <div class="mb-4">
                 <label class="block font-medium text-sm text-gray-700">Послуга</label>
                 <input type="text" value="{{ $appointment->service->name }}" class="w-full border rounded px-3 py-2 bg-gray-100" disabled>
                 <input type="hidden" name="service_id" value="{{ $appointment->service->id }}">
             </div>
 
-            {{-- Майстер (тільки з тих, що надають послугу) --}}
+            {{-- Майстер --}}
             <div class="mb-4">
                 <label for="master_id" class="block font-medium text-sm text-gray-700">Майстер</label>
                 <select name="master_id" id="master_id" class="w-full border rounded px-3 py-2">
@@ -37,6 +37,12 @@
                         </option>
                     @endforeach
                 </select>
+            </div>
+
+            {{-- Графік майстра --}}
+            <div id="schedule-box" class="mb-4 hidden border rounded p-3 bg-gray-50 text-sm text-gray-700">
+                <strong>Графік роботи майстра:</strong>
+                <ul id="schedule-list" class="list-disc list-inside mt-1"></ul>
             </div>
 
             {{-- Дата --}}
@@ -69,4 +75,34 @@
             </div>
         </form>
     </div>
+
+    {{-- Графік через Axios --}}
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const masterSelect = document.getElementById('master_id');
+        const scheduleBox = document.getElementById('schedule-box');
+        const scheduleList = document.getElementById('schedule-list');
+
+        async function loadSchedule() {
+            const masterId = masterSelect.value;
+            if (!masterId) return;
+
+            try {
+                const res = await axios.get(`/api/masters/${masterId}/schedule`);
+                scheduleList.innerHTML = '';
+                res.data.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = `${item.day}: ${item.from} – ${item.to}`;
+                    scheduleList.appendChild(li);
+                });
+                scheduleBox.classList.remove('hidden');
+            } catch {
+                scheduleList.innerHTML = '';
+                scheduleBox.classList.add('hidden');
+            }
+        }
+
+        masterSelect.addEventListener('change', loadSchedule);
+        window.addEventListener('DOMContentLoaded', loadSchedule);
+    </script>
 </x-app-layout>
